@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { Menu, X, ChevronDown } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { FindriveLogo } from "@/components/FindriveLogo";
 
 const navItems = [
   { name: "Home", href: "#home" },
@@ -20,13 +21,8 @@ export function Header() {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
-          <a href="#home" className="flex items-center gap-3 group">
-            <div className="w-10 h-10 rounded-lg bg-gradient-gold flex items-center justify-center shadow-gold">
-              <span className="font-display font-bold text-primary-foreground text-xl">F</span>
-            </div>
-            <span className="font-display text-2xl font-bold text-foreground group-hover:text-primary transition-colors">
-              Findrive
-            </span>
+          <a href="#home" className="flex items-center group">
+            <FindriveLogo size="md" className="transition-transform group-hover:scale-105" />
           </a>
 
           {/* Desktop Navigation */}
