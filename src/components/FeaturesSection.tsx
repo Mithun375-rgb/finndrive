@@ -1,4 +1,38 @@
-import { Wallet, TrendingUp, GraduationCap, Rocket } from "lucide-react";
+import { Wallet, TrendingUp, GraduationCap, Rocket, FileText, Lightbulb, BarChart3, ChevronDown } from "lucide-react";
+import { useState } from "react";
+
+const moneyManagementSubs = [
+  {
+    icon: FileText,
+    title: "Budgeting Tools",
+    items: [
+      "Create monthly budgets with income vs. expenses.",
+      "Set spending limits for categories (food, travel, shopping).",
+      "Visual charts to track progress.",
+      "Alerts when you're close to overspending.",
+    ],
+  },
+  {
+    icon: Lightbulb,
+    title: "Savings Tips",
+    items: [
+      "Follow the 50/30/20 rule (Needs/Wants/Savings).",
+      "Automate savings into a separate account.",
+      "Cut small daily expenses (coffee, snacks) to save big over time.",
+      "Build an emergency fund for unexpected costs.",
+    ],
+  },
+  {
+    icon: BarChart3,
+    title: "Expense Tracking",
+    items: [
+      "Record daily expenses easily.",
+      "Categorize spending (essentials vs. non-essentials).",
+      "Weekly and monthly reports to see patterns.",
+      "Compare spending habits over time to improve financial discipline.",
+    ],
+  },
+];
 
 const features = [
   {
@@ -6,6 +40,7 @@ const features = [
     title: "Money Management",
     description: "Budgeting tools, savings tips, and expense tracking to master your finances.",
     color: "from-primary to-gold-light",
+    hasExpanded: true,
   },
   {
     icon: TrendingUp,
@@ -28,6 +63,8 @@ const features = [
 ];
 
 export function FeaturesSection() {
+  const [expandedFeature, setExpandedFeature] = useState<string | null>(null);
+
   return (
     <section id="features" className="py-24 relative grain">
       <div className="container mx-auto px-4">
@@ -47,8 +84,15 @@ export function FeaturesSection() {
           {features.map((feature, index) => (
             <div
               key={feature.title}
-              className="group relative p-6 rounded-2xl bg-card border border-border hover:border-primary/50 transition-all duration-500 shadow-card hover:shadow-elevated"
+              className={`group relative p-6 rounded-2xl bg-card border border-border hover:border-primary/50 transition-all duration-500 shadow-card hover:shadow-elevated ${
+                feature.hasExpanded ? "cursor-pointer" : ""
+              } ${expandedFeature === feature.title ? "lg:col-span-2 lg:row-span-2" : ""}`}
               style={{ animationDelay: `${index * 0.1}s` }}
+              onClick={() => {
+                if (feature.hasExpanded) {
+                  setExpandedFeature(expandedFeature === feature.title ? null : feature.title);
+                }
+              }}
             >
               {/* Icon */}
               <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${feature.color} flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300`}>
@@ -56,15 +100,55 @@ export function FeaturesSection() {
               </div>
 
               {/* Content */}
-              <h3 className="font-display text-xl font-semibold mb-3 group-hover:text-primary transition-colors">
-                {feature.title}
-              </h3>
+              <div className="flex items-center gap-2 mb-3">
+                <h3 className="font-display text-xl font-semibold group-hover:text-primary transition-colors">
+                  {feature.title}
+                </h3>
+                {feature.hasExpanded && (
+                  <ChevronDown 
+                    className={`w-5 h-5 text-muted-foreground transition-transform duration-300 ${
+                      expandedFeature === feature.title ? "rotate-180" : ""
+                    }`} 
+                  />
+                )}
+              </div>
               <p className="text-muted-foreground text-sm leading-relaxed">
                 {feature.description}
               </p>
 
+              {/* Expanded Content for Money Management */}
+              {feature.hasExpanded && expandedFeature === feature.title && (
+                <div className="mt-6 space-y-6 animate-fade-in">
+                  {moneyManagementSubs.map((sub, subIndex) => (
+                    <div key={sub.title} className="border-t border-border/50 pt-4">
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                          <sub.icon className="w-4 h-4 text-primary" />
+                        </div>
+                        <h4 className="font-display font-semibold text-foreground">
+                          {subIndex + 1}. {sub.title}
+                        </h4>
+                      </div>
+                      <ul className="space-y-2 pl-11">
+                        {sub.items.map((item, itemIndex) => (
+                          <li 
+                            key={itemIndex} 
+                            className="text-sm text-muted-foreground flex items-start gap-2"
+                          >
+                            <span className="text-primary font-medium shrink-0">
+                              {subIndex + 1}.{itemIndex + 1}
+                            </span>
+                            {item}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ))}
+                </div>
+              )}
+
               {/* Hover Effect */}
-              <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
             </div>
           ))}
         </div>
