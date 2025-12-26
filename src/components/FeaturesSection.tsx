@@ -1,26 +1,7 @@
-import { Wallet, TrendingUp, GraduationCap, Rocket, FileText, Lightbulb, BarChart3, ChevronDown, ChevronRight, PieChart, LineChart, Building, Award, Search, BookOpen, Zap, Users, Target, Briefcase, Palette, Globe } from "lucide-react";
+import { Wallet, TrendingUp, GraduationCap, Rocket, ChevronDown, ChevronRight, ExternalLink } from "lucide-react";
 import { useState } from "react";
-
-interface SubItem {
-  title: string;
-  content: {
-    definition: string;
-    whyRequired: string;
-    whatItDoes: string;
-    howItWorks: string;
-    example: string;
-    scenario: string;
-    keyTakeaway: string;
-    conclusion: string;
-  };
-}
-
-interface SubCategory {
-  icon: typeof FileText;
-  title: string;
-  introduction: string;
-  items: SubItem[];
-}
+import { Link } from "react-router-dom";
+import { featureSubsData, SubItem, SubCategory } from "@/data/featureData";
 
 const featureSubsData: Record<string, SubCategory[]> = {
   "Money Management": [
@@ -866,62 +847,22 @@ export function FeaturesSection() {
                           
                           return (
                             <li key={itemIndex} className="text-sm">
-                              <button
-                                className="flex items-start gap-2 w-full text-left hover:bg-muted/50 rounded-lg p-2 -ml-2 transition-colors"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setExpandedSubItem(isExpanded ? null : itemKey);
-                                }}
+                              <Link
+                                to={`/topic/${encodeURIComponent(feature.title)}/${subIndex + 1}/${itemIndex + 1}`}
+                                className="flex items-start gap-2 w-full text-left hover:bg-muted/50 rounded-lg p-2 -ml-2 transition-colors group/link"
+                                onClick={(e) => e.stopPropagation()}
                               >
-                                <ChevronRight 
-                                  className={`w-4 h-4 text-primary shrink-0 mt-0.5 transition-transform duration-200 ${
-                                    isExpanded ? "rotate-90" : ""
-                                  }`}
+                                <ExternalLink 
+                                  className="w-4 h-4 text-primary shrink-0 mt-0.5 group-hover/link:scale-110 transition-transform"
                                 />
                                 <span className="text-primary font-medium shrink-0">
                                   {subIndex + 1}.{itemIndex + 1}
                                 </span>
-                                <span className="text-foreground font-medium">
+                                <span className="text-foreground font-medium group-hover/link:text-primary transition-colors">
                                   {item.title}
                                 </span>
-                              </button>
+                              </Link>
                               
-                              {isExpanded && (
-                                <div className="ml-6 mt-3 p-4 bg-muted/30 rounded-lg border border-border/50 space-y-3 animate-fade-in">
-                                  <div>
-                                    <span className="text-xs font-semibold text-primary uppercase tracking-wider">Definition</span>
-                                    <p className="text-muted-foreground mt-1">{item.content.definition}</p>
-                                  </div>
-                                  <div>
-                                    <span className="text-xs font-semibold text-primary uppercase tracking-wider">Why Required</span>
-                                    <p className="text-muted-foreground mt-1">{item.content.whyRequired}</p>
-                                  </div>
-                                  <div>
-                                    <span className="text-xs font-semibold text-primary uppercase tracking-wider">What It Does</span>
-                                    <p className="text-muted-foreground mt-1">{item.content.whatItDoes}</p>
-                                  </div>
-                                  <div>
-                                    <span className="text-xs font-semibold text-primary uppercase tracking-wider">How It Works</span>
-                                    <p className="text-muted-foreground mt-1">{item.content.howItWorks}</p>
-                                  </div>
-                                  <div>
-                                    <span className="text-xs font-semibold text-primary uppercase tracking-wider">Example</span>
-                                    <p className="text-muted-foreground mt-1">{item.content.example}</p>
-                                  </div>
-                                  <div>
-                                    <span className="text-xs font-semibold text-primary uppercase tracking-wider">Scenario</span>
-                                    <p className="text-muted-foreground mt-1">{item.content.scenario}</p>
-                                  </div>
-                                  <div className="pt-2 border-t border-border/50">
-                                    <span className="text-xs font-semibold text-emerald-500 uppercase tracking-wider">Key Takeaway</span>
-                                    <p className="text-foreground font-medium mt-1">{item.content.keyTakeaway}</p>
-                                  </div>
-                                  <div>
-                                    <span className="text-xs font-semibold text-blue-500 uppercase tracking-wider">Conclusion</span>
-                                    <p className="text-foreground mt-1">{item.content.conclusion}</p>
-                                  </div>
-                                </div>
-                              )}
                             </li>
                           );
                         })}
