@@ -1,5 +1,5 @@
-import { useParams, Link } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
+import { useParams, Link, useNavigate } from "react-router-dom";
+import { ArrowLeft, ArrowRight, CheckCircle2 } from "lucide-react";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -7,11 +7,40 @@ import { featureSubsData } from "@/data/featureData";
 
 export default function TopicDetail() {
   const { category, subIndex, itemIndex } = useParams();
+  const navigate = useNavigate();
+
+  const currentSubIndex = Number(subIndex);
+  const currentItemIndex = Number(itemIndex);
 
   // Find the content
   const categoryData = category ? featureSubsData[decodeURIComponent(category)] : null;
-  const subCategory = categoryData?.[Number(subIndex) - 1];
-  const item = subCategory?.items[Number(itemIndex) - 1];
+  const subCategory = categoryData?.[currentSubIndex - 1];
+  const item = subCategory?.items[currentItemIndex - 1];
+
+  // Check if this is the last item in the current subcategory
+  const isLastItemInSubCategory = subCategory ? currentItemIndex >= subCategory.items.length : false;
+  
+  // Check if this is the last subcategory in the category
+  const isLastSubCategory = categoryData ? currentSubIndex >= categoryData.length : false;
+  
+  // Check if this is the very last lesson in the entire category
+  const isChapterComplete = isLastItemInSubCategory && isLastSubCategory;
+
+  // Get next subcategory info for "Go to next lesson" button
+  const nextSubCategory = categoryData?.[currentSubIndex];
+
+  // Navigation handlers
+  const goToNextItem = () => {
+    if (category) {
+      navigate(`/topic/${encodeURIComponent(category)}/${currentSubIndex}/${currentItemIndex + 1}`);
+    }
+  };
+
+  const goToNextSubCategory = () => {
+    if (category && nextSubCategory) {
+      navigate(`/topic/${encodeURIComponent(category)}/${currentSubIndex + 1}/1`);
+    }
+  };
 
   if (!item || !subCategory || !categoryData) {
     return (
@@ -131,13 +160,71 @@ export default function TopicDetail() {
           </div>
 
           {/* Navigation */}
-          <div className="mt-12 pt-8 border-t border-border flex justify-center">
-            <Link to="/#features">
-              <Button variant="hero" size="lg">
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Explore More Topics
-              </Button>
-            </Link>
+          <div className="mt-12 pt-8 border-t border-border">
+            {isChapterComplete ? (
+              // Show completion message when category is complete
+              <div className="text-center space-y-6">
+                <div className="inline-flex items-center gap-3 px-6 py-4 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-emerald-500/10 border border-emerald-500/30">
+                  <CheckCircle2 className="w-8 h-8 text-emerald-500" />
+                  <span className="text-xl font-display font-semibold text-emerald-500">
+                    {subCategory.title} completed!
+                  </span>
+                </div>
+                <p className="text-muted-foreground">
+                  Congratulations! You've completed all lessons in this category.
+                </p>
+                <Link to="/#features">
+                  <Button variant="hero" size="lg">
+                    <ArrowLeft className="w-4 h-4 mr-2" />
+                    Explore More Topics
+                  </Button>
+                </Link>
+              </div>
+            ) : isLastItemInSubCategory && nextSubCategory ? (
+              // Show completion message with "Go to next lesson" for next subcategory
+              <div className="text-center space-y-6">
+                <div className="inline-flex items-center gap-3 px-6 py-4 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-emerald-500/10 border border-emerald-500/30">
+                  <CheckCircle2 className="w-8 h-8 text-emerald-500" />
+                  <span className="text-xl font-display font-semibold text-emerald-500">
+                    {subCategory.title} completed!
+                  </span>
+                </div>
+                <div className="p-6 rounded-2xl bg-card border border-border max-w-2xl mx-auto">
+                  <h3 className="font-display font-semibold text-lg mb-2">
+                    Up Next: {currentSubIndex + 1}. {nextSubCategory.title}
+                  </h3>
+                  <p className="text-muted-foreground text-sm mb-4 italic">
+                    {nextSubCategory.introduction}
+                  </p>
+                  <ul className="text-sm text-muted-foreground space-y-1 mb-4">
+                    {nextSubCategory.items.map((nextItem, idx) => (
+                      <li key={idx} className="flex items-center gap-2">
+                        <span className="text-primary font-medium">{currentSubIndex + 1}.{idx + 1}</span>
+                        <span>{nextItem.title}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <Button variant="hero" size="lg" onClick={goToNextSubCategory}>
+                  Go to next lesson
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
+              </div>
+            ) : (
+              // Show normal navigation with "Explore More Topics" and "Next Lesson"
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Link to="/#features">
+                  <Button variant="outline" size="lg">
+                    <ArrowLeft className="w-4 h-4 mr-2" />
+                    Explore More Topics
+                  </Button>
+                </Link>
+                <Button variant="hero" size="lg" onClick={goToNextItem}>
+                  Next Lesson
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       </main>
