@@ -41,7 +41,7 @@ const upcomingEvents = [
 
 export function CommunitySection() {
   return (
-    <section id="startups" className="py-24 bg-gradient-dark relative grain">
+    <section id="community" className="py-24 bg-gradient-dark relative grain">
       <div className="container mx-auto px-4">
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-16">
