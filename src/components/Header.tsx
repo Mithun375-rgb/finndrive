@@ -6,7 +6,7 @@ import { FindriveLogo } from "@/components/FindriveLogo";
 
 const navItems = [
   { name: "Home", href: "/" },
-  { name: "Features", href: "/#features" },
+  { name: "Money Essentials", href: "/#features" },
   { name: "Scholarships", href: "/#scholarships" },
   { name: "Learn", href: "/#learn" },
   { name: "Community", href: "/#community" },
