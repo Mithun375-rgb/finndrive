@@ -27,7 +27,7 @@ const topics = [
 
 export function LearnSection() {
   return (
-    <section id="investments" className="py-24 relative grain">
+    <section id="learn" className="py-24 relative grain">
       <div className="container mx-auto px-4">
         {/* Section Header */}
         <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6 mb-16">
