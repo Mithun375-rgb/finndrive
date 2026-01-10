@@ -4,6 +4,7 @@ import { ArrowLeft, Send, Bot, User, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { toast } from "sonner";
 
 interface Message {
   id: string;
@@ -12,11 +13,13 @@ interface Message {
   timestamp: Date;
 }
 
+const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`;
+
 export default function AskAI() {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "1",
-      content: "Hello! I'm your Findrive AI assistant. I can help you with questions about money management, investments, scholarships, startups, and more. How can I assist you today?",
+      content: "Hello! I'm your Findrive AI assistant. I can help you with questions about money management, investments, scholarships, startups, and even solve basic math problems! How can I assist you today?",
       role: "assistant",
       timestamp: new Date(),
     },
@@ -30,6 +33,34 @@ export default function AskAI() {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages]);
+
+  const streamChat = async (userMessages: { role: string; content: string }[]) => {
+    const response = await fetch(CHAT_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+      },
+      body: JSON.stringify({ messages: userMessages }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      if (response.status === 429) {
+        throw new Error("Rate limit exceeded. Please wait a moment and try again.");
+      }
+      if (response.status === 402) {
+        throw new Error("Service temporarily unavailable. Please try again later.");
+      }
+      throw new Error(errorData.error || "Failed to get response");
+    }
+
+    if (!response.body) {
+      throw new Error("No response body");
+    }
+
+    return response;
+  };
 
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
@@ -45,36 +76,129 @@ export default function AskAI() {
     setInput("");
     setIsLoading(true);
 
-    // Simulate AI response (replace with actual AI integration)
-    setTimeout(() => {
-      const aiResponse: Message = {
-        id: (Date.now() + 1).toString(),
-        content: getSimulatedResponse(userMessage.content),
-        role: "assistant",
-        timestamp: new Date(),
-      };
-      setMessages((prev) => [...prev, aiResponse]);
-      setIsLoading(false);
-    }, 1000);
-  };
+    // Prepare messages for API
+    const apiMessages = [...messages, userMessage].map((m) => ({
+      role: m.role,
+      content: m.content,
+    }));
 
-  const getSimulatedResponse = (userInput: string): string => {
-    const lowerInput = userInput.toLowerCase();
-    
-    if (lowerInput.includes("budget") || lowerInput.includes("money")) {
-      return "Great question about budgeting! The 50/30/20 rule is a popular budgeting method: 50% for needs, 30% for wants, and 20% for savings. Would you like me to explain more about creating a monthly budget?";
+    try {
+      const response = await streamChat(apiMessages);
+      const reader = response.body!.getReader();
+      const decoder = new TextDecoder();
+      let textBuffer = "";
+      let assistantContent = "";
+      let assistantMessageId = (Date.now() + 1).toString();
+      let messageCreated = false;
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        textBuffer += decoder.decode(value, { stream: true });
+
+        let newlineIndex: number;
+        while ((newlineIndex = textBuffer.indexOf("\n")) !== -1) {
+          let line = textBuffer.slice(0, newlineIndex);
+          textBuffer = textBuffer.slice(newlineIndex + 1);
+
+          if (line.endsWith("\r")) line = line.slice(0, -1);
+          if (line.startsWith(":") || line.trim() === "") continue;
+          if (!line.startsWith("data: ")) continue;
+
+          const jsonStr = line.slice(6).trim();
+          if (jsonStr === "[DONE]") break;
+
+          try {
+            const parsed = JSON.parse(jsonStr);
+            const content = parsed.choices?.[0]?.delta?.content as string | undefined;
+            if (content) {
+              assistantContent += content;
+              
+              if (!messageCreated) {
+                setMessages((prev) => [
+                  ...prev,
+                  {
+                    id: assistantMessageId,
+                    content: assistantContent,
+                    role: "assistant",
+                    timestamp: new Date(),
+                  },
+                ]);
+                messageCreated = true;
+              } else {
+                setMessages((prev) =>
+                  prev.map((m) =>
+                    m.id === assistantMessageId
+                      ? { ...m, content: assistantContent }
+                      : m
+                  )
+                );
+              }
+            }
+          } catch {
+            // Incomplete JSON, put back and wait
+            textBuffer = line + "\n" + textBuffer;
+            break;
+          }
+        }
+      }
+
+      // Final flush
+      if (textBuffer.trim()) {
+        for (let raw of textBuffer.split("\n")) {
+          if (!raw) continue;
+          if (raw.endsWith("\r")) raw = raw.slice(0, -1);
+          if (raw.startsWith(":") || raw.trim() === "") continue;
+          if (!raw.startsWith("data: ")) continue;
+          const jsonStr = raw.slice(6).trim();
+          if (jsonStr === "[DONE]") continue;
+          try {
+            const parsed = JSON.parse(jsonStr);
+            const content = parsed.choices?.[0]?.delta?.content as string | undefined;
+            if (content) {
+              assistantContent += content;
+              setMessages((prev) =>
+                prev.map((m) =>
+                  m.id === assistantMessageId
+                    ? { ...m, content: assistantContent }
+                    : m
+                )
+              );
+            }
+          } catch {
+            /* ignore partial leftovers */
+          }
+        }
+      }
+
+      // If no content was received, add fallback message
+      if (!assistantContent) {
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: assistantMessageId,
+            content: "I apologize, but I couldn't process your request. Please try again.",
+            role: "assistant",
+            timestamp: new Date(),
+          },
+        ]);
+      }
+    } catch (error) {
+      console.error("Chat error:", error);
+      toast.error(error instanceof Error ? error.message : "Failed to get response");
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: (Date.now() + 1).toString(),
+          content: "I'm sorry, I encountered an error. Please try again in a moment.",
+          role: "assistant",
+          timestamp: new Date(),
+        },
+      ]);
+    } finally {
+      setIsLoading(false);
     }
-    if (lowerInput.includes("invest") || lowerInput.includes("stock")) {
-      return "Investing is a powerful way to grow your wealth! For beginners, I recommend starting with index funds or ETFs as they offer diversification with lower risk. Would you like to learn about different investment options?";
-    }
-    if (lowerInput.includes("scholarship") || lowerInput.includes("education")) {
-      return "There are many scholarship opportunities available! Government scholarships, NGO-funded programs, and merit-based awards can help fund your education. Would you like me to guide you through finding scholarships that match your profile?";
-    }
-    if (lowerInput.includes("startup") || lowerInput.includes("business")) {
-      return "Starting a business is exciting! Key steps include validating your idea, creating a business plan, and securing funding. Would you like tips on any specific aspect of entrepreneurship?";
-    }
-    
-    return "That's an interesting topic! I can help you with money management, investments, scholarships, and startup guidance. Could you tell me more about what specific aspect you'd like to explore?";
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -130,7 +254,7 @@ export default function AskAI() {
                       : "bg-card border border-border rounded-bl-md"
                   }`}
                 >
-                  <p className="text-sm leading-relaxed">{message.content}</p>
+                  <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>
                   <span className="text-xs opacity-60 mt-2 block">
                     {message.timestamp.toLocaleTimeString([], { 
                       hour: "2-digit", 
@@ -145,7 +269,7 @@ export default function AskAI() {
                 )}
               </div>
             ))}
-            {isLoading && (
+            {isLoading && messages[messages.length - 1]?.role === "user" && (
               <div className="flex gap-3 justify-start">
                 <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-gold-dark flex items-center justify-center">
                   <Bot className="w-5 h-5 text-primary-foreground" />
@@ -171,7 +295,7 @@ export default function AskAI() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyPress={handleKeyPress}
-              placeholder="Ask me anything about finance..."
+              placeholder="Ask me anything about finance, budgeting, or even math..."
               className="flex-1 bg-background border-border focus:border-primary"
               disabled={isLoading}
             />
