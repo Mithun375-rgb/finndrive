@@ -1,10 +1,12 @@
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, ArrowRight, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, CheckCircle2, Play, HelpCircle } from "lucide-react";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { featureSubsData } from "@/data/featureData";
-
+import { VideoLecture } from "@/components/VideoLecture";
+import { TopicQuiz } from "@/components/TopicQuiz";
+import { getQuizForTopic } from "@/data/quizData";
 export default function TopicDetail() {
   const { category, subIndex, itemIndex } = useParams();
   const navigate = useNavigate();
@@ -158,6 +160,44 @@ export default function TopicDetail() {
               <p className="text-foreground leading-relaxed text-lg">{item.content.conclusion}</p>
             </div>
           </div>
+
+          {/* Video Lecture Section */}
+          <div className="mt-12">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                <Play className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h2 className="font-display text-xl font-bold">Video Lecture</h2>
+                <p className="text-sm text-muted-foreground">Watch and learn at your own pace</p>
+              </div>
+            </div>
+            <VideoLecture 
+              topicTitle={item.title}
+              subCategoryTitle={subCategory.title}
+              lessonNumber={`${subIndex}.${itemIndex}`}
+            />
+          </div>
+
+          {/* Quiz Section */}
+          {category && getQuizForTopic(decodeURIComponent(category), currentSubIndex, currentItemIndex) && (
+            <div className="mt-12">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center">
+                  <HelpCircle className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h2 className="font-display text-xl font-bold">Test Your Knowledge</h2>
+                  <p className="text-sm text-muted-foreground">Take a quick quiz to reinforce your learning</p>
+                </div>
+              </div>
+              <TopicQuiz 
+                title={item.title}
+                lessonNumber={`${subIndex}.${itemIndex}`}
+                questions={getQuizForTopic(decodeURIComponent(category), currentSubIndex, currentItemIndex)!}
+              />
+            </div>
+          )}
 
           {/* Navigation */}
           <div className="mt-12 pt-8 border-t border-border">
