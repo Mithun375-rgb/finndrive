@@ -11,6 +11,7 @@ interface VideoLectureProps {
   topicTitle: string;
   subCategoryTitle: string;
   lessonNumber: string;
+  onVideoComplete?: () => void;
 }
 
 interface Slide {
@@ -30,7 +31,7 @@ const defaultSlides: Slide[] = [
   }
 ];
 
-export function VideoLecture({ topicTitle, subCategoryTitle, lessonNumber }: VideoLectureProps) {
+export function VideoLecture({ topicTitle, subCategoryTitle, lessonNumber, onVideoComplete }: VideoLectureProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -157,6 +158,7 @@ export function VideoLecture({ topicTitle, subCategoryTitle, lessonNumber }: Vid
         setProgress((prev) => {
           if (prev >= 100) {
             stopPlayback();
+            onVideoComplete?.();
             return 100;
           }
           const newProgress = prev + (100 / (totalDuration * 10));

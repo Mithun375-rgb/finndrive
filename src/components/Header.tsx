@@ -3,6 +3,7 @@ import { Menu, X } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { FindriveLogo } from "@/components/FindriveLogo";
+import { UserMenu } from "@/components/UserMenu";
 
 const navItems = [
   { name: "Home", href: "/" },
@@ -69,8 +70,9 @@ export function Header() {
             ))}
           </nav>
 
-          {/* CTA Button */}
-          <div className="hidden lg:block">
+          {/* User Menu & CTA */}
+          <div className="hidden lg:flex items-center gap-4">
+            <UserMenu />
             <Button variant="hero" size="lg">
               Download App
             </Button>
@@ -110,6 +112,9 @@ export function Header() {
                   </button>
                 )
               ))}
+              <div className="pt-4 border-t border-border/50 mt-4">
+                <UserMenu />
+              </div>
               <Button variant="hero" size="lg" className="mt-4">
                 Download App
               </Button>
