@@ -1,5 +1,5 @@
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, ArrowRight, CheckCircle2, Play, HelpCircle } from "lucide-react";
+import { ArrowLeft, ArrowRight, CheckCircle2, Play, HelpCircle, BookmarkCheck } from "lucide-react";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -7,12 +7,19 @@ import { featureSubsData } from "@/data/featureData";
 import { VideoLecture } from "@/components/VideoLecture";
 import { TopicQuiz } from "@/components/TopicQuiz";
 import { getQuizForTopic } from "@/data/quizData";
+import { useLearningProgress } from "@/hooks/useLearningProgress";
+import { useAuth } from "@/contexts/AuthContext";
 export default function TopicDetail() {
   const { category, subIndex, itemIndex } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const { getProgressForTopic, markLessonComplete, markVideoWatched, saveQuizScore } = useLearningProgress();
 
   const currentSubIndex = Number(subIndex);
   const currentItemIndex = Number(itemIndex);
+  
+  // Get category index for progress tracking
+  const categoryIndex = category ? Object.keys(featureSubsData).indexOf(decodeURIComponent(category)) : -1;
 
   // Find the content
   const categoryData = category ? featureSubsData[decodeURIComponent(category)] : null;
@@ -31,16 +38,47 @@ export default function TopicDetail() {
   // Get next subcategory info for "Go to next lesson" button
   const nextSubCategory = categoryData?.[currentSubIndex];
 
+  // Get progress for current topic
+  const currentProgress = categoryIndex >= 0 
+    ? getProgressForTopic(categoryIndex, currentSubIndex, currentItemIndex) 
+    : undefined;
+
   // Navigation handlers
   const goToNextItem = () => {
     if (category) {
+      // Mark current lesson as complete before moving
+      if (categoryIndex >= 0 && user) {
+        markLessonComplete(categoryIndex, currentSubIndex, currentItemIndex);
+      }
       navigate(`/topic/${encodeURIComponent(category)}/${currentSubIndex}/${currentItemIndex + 1}`);
     }
   };
 
   const goToNextSubCategory = () => {
     if (category && nextSubCategory) {
+      // Mark current lesson as complete before moving
+      if (categoryIndex >= 0 && user) {
+        markLessonComplete(categoryIndex, currentSubIndex, currentItemIndex);
+      }
       navigate(`/topic/${encodeURIComponent(category)}/${currentSubIndex + 1}/1`);
+    }
+  };
+
+  const handleMarkComplete = () => {
+    if (categoryIndex >= 0) {
+      markLessonComplete(categoryIndex, currentSubIndex, currentItemIndex);
+    }
+  };
+
+  const handleVideoComplete = () => {
+    if (categoryIndex >= 0 && user) {
+      markVideoWatched(categoryIndex, currentSubIndex, currentItemIndex);
+    }
+  };
+
+  const handleQuizComplete = (score: number) => {
+    if (categoryIndex >= 0) {
+      saveQuizScore(categoryIndex, currentSubIndex, currentItemIndex, score);
     }
   };
 
@@ -81,13 +119,32 @@ export default function TopicDetail() {
 
           {/* Topic Header */}
           <div className="mb-12">
-            <div className="flex items-center gap-3 mb-4">
-              <span className="text-primary font-display font-semibold text-lg">
-                {subIndex}.{itemIndex}
-              </span>
-              <span className="px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium">
-                {subCategory.title}
-              </span>
+            <div className="flex items-center justify-between flex-wrap gap-4 mb-4">
+              <div className="flex items-center gap-3">
+                <span className="text-primary font-display font-semibold text-lg">
+                  {subIndex}.{itemIndex}
+                </span>
+                <span className="px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium">
+                  {subCategory.title}
+                </span>
+                {currentProgress?.completed && (
+                  <span className="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-500 text-sm font-medium flex items-center gap-1">
+                    <CheckCircle2 className="w-4 h-4" />
+                    Completed
+                  </span>
+                )}
+              </div>
+              {user && !currentProgress?.completed && (
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={handleMarkComplete}
+                  className="gap-2"
+                >
+                  <BookmarkCheck className="w-4 h-4" />
+                  Mark as Complete
+                </Button>
+              )}
             </div>
             <h1 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold mb-4">
               {item.title}
@@ -176,6 +233,7 @@ export default function TopicDetail() {
               topicTitle={item.title}
               subCategoryTitle={subCategory.title}
               lessonNumber={`${subIndex}.${itemIndex}`}
+              onVideoComplete={handleVideoComplete}
             />
           </div>
 
@@ -195,6 +253,10 @@ export default function TopicDetail() {
                 title={item.title}
                 lessonNumber={`${subIndex}.${itemIndex}`}
                 questions={getQuizForTopic(decodeURIComponent(category), currentSubIndex, currentItemIndex)!}
+                categoryIndex={categoryIndex}
+                subcategoryIndex={currentSubIndex}
+                itemIndex={currentItemIndex}
+                onQuizComplete={handleQuizComplete}
               />
             </div>
           )}

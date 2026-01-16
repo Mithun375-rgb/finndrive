@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { CheckCircle2, XCircle, Trophy, RotateCcw, ChevronRight, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -14,9 +14,21 @@ interface TopicQuizProps {
   title: string;
   lessonNumber: string;
   questions: QuizQuestion[];
+  categoryIndex?: number;
+  subcategoryIndex?: number;
+  itemIndex?: number;
+  onQuizComplete?: (score: number) => void;
 }
 
-export function TopicQuiz({ title, lessonNumber, questions }: TopicQuizProps) {
+export function TopicQuiz({ 
+  title, 
+  lessonNumber, 
+  questions,
+  categoryIndex,
+  subcategoryIndex,
+  itemIndex,
+  onQuizComplete 
+}: TopicQuizProps) {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [showResult, setShowResult] = useState(false);
@@ -44,6 +56,8 @@ export function TopicQuiz({ title, lessonNumber, questions }: TopicQuizProps) {
       setShowResult(false);
     } else {
       setIsQuizComplete(true);
+      const finalPercentage = Math.round((score / questions.length) * 100);
+      onQuizComplete?.(finalPercentage);
     }
   };
 
