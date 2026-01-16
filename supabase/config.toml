@@ -1,1 +1,7 @@
 project_id = "soyrpayhyjjuzcwyfdbo"
+
+[functions.chat]
+verify_jwt = false
+
+[functions.generate-lecture-content]
+verify_jwt = false
