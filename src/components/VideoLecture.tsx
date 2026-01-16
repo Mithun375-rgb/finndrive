@@ -1,7 +1,11 @@
-import { useState } from "react";
-import { Play, Pause, Volume2, VolumeX, Maximize, SkipForward, SkipBack } from "lucide-react";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { Play, Pause, Volume2, VolumeX, Maximize, SkipForward, SkipBack, Loader2, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import { supabase } from "@/integrations/supabase/client";
+import { useSpeechSynthesis } from "@/hooks/useSpeechSynthesis";
+import { AnimatedCharacter } from "./AnimatedCharacter";
+import { HandWritingAnimation } from "./HandWritingAnimation";
 
 interface VideoLectureProps {
   topicTitle: string;
@@ -9,57 +13,150 @@ interface VideoLectureProps {
   lessonNumber: string;
 }
 
+interface Slide {
+  title: string;
+  content: string;
+  visual: string;
+  speakText: string;
+  duration?: number;
+}
+
+const defaultSlides: Slide[] = [
+  {
+    title: "Loading...",
+    content: "Preparing your personalized lecture content",
+    visual: "character",
+    speakText: "Please wait while we prepare your personalized lecture.",
+  }
+];
+
 export function VideoLecture({ topicTitle, subCategoryTitle, lessonNumber }: VideoLectureProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [progress, setProgress] = useState(0);
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [slides, setSlides] = useState<Slide[]>(defaultSlides);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isWriting, setIsWriting] = useState(false);
+  
+  const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const { speak, cancel, isSpeaking, isPaused, pause, resume } = useSpeechSynthesis({ rate: 0.9 });
 
-  // Simulated lecture slides based on topic
-  const slides = [
-    {
-      title: "Introduction",
-      content: `Welcome to ${topicTitle}`,
-      visual: "📚",
-      duration: 15,
-    },
-    {
-      title: "Key Concepts",
-      content: `Understanding the fundamentals of ${subCategoryTitle}`,
-      visual: "💡",
-      duration: 20,
-    },
-    {
-      title: "Real-World Application",
-      content: "How this applies to your daily financial decisions",
-      visual: "🌍",
-      duration: 25,
-    },
-    {
-      title: "Best Practices",
-      content: "Tips and strategies for success",
-      visual: "✅",
-      duration: 20,
-    },
-    {
-      title: "Summary",
-      content: "Key takeaways and next steps",
-      visual: "🎯",
-      duration: 10,
-    },
-  ];
+  // Fetch AI-generated content
+  useEffect(() => {
+    const fetchLectureContent = async () => {
+      setIsLoading(true);
+      setError(null);
+      
+      try {
+        const { data, error: fnError } = await supabase.functions.invoke('generate-lecture-content', {
+          body: { topicTitle, subCategoryTitle }
+        });
 
-  const totalDuration = slides.reduce((acc, slide) => acc + slide.duration, 0);
+        if (fnError) throw fnError;
+        
+        if (data?.slides && Array.isArray(data.slides)) {
+          setSlides(data.slides.map((slide: Slide) => ({
+            ...slide,
+            duration: slide.duration || 20,
+          })));
+        } else {
+          throw new Error('Invalid response format');
+        }
+      } catch (err) {
+        console.error('Error fetching lecture content:', err);
+        setError('Failed to load lecture content. Using default content.');
+        // Fallback slides
+        setSlides([
+          {
+            title: `Welcome to ${topicTitle}`,
+            content: `Let's explore the key concepts of ${subCategoryTitle} together!`,
+            visual: "character",
+            speakText: `Welcome! Today we're going to learn about ${topicTitle}. This is an important topic in ${subCategoryTitle}. Let's get started!`,
+            duration: 20,
+          },
+          {
+            title: "Understanding the Basics",
+            content: `${topicTitle} is a fundamental concept that helps you make better financial decisions.`,
+            visual: "writing",
+            speakText: `Understanding the basics is crucial. ${topicTitle} helps you build a strong foundation for your financial future.`,
+            duration: 25,
+          },
+          {
+            title: "Real World Application",
+            content: "See how this knowledge applies to everyday situations and decisions.",
+            visual: "character",
+            speakText: "Now let's see how this applies to real life. These concepts will help you make smarter choices every day.",
+            duration: 20,
+          },
+          {
+            title: "Key Takeaways",
+            content: "Remember these important points as you continue your learning journey.",
+            visual: "writing",
+            speakText: "Here are the key takeaways. Remember these points and apply them in your daily life.",
+            duration: 15,
+          },
+          {
+            title: "What's Next?",
+            content: "Continue to the quiz to test your understanding!",
+            visual: "character",
+            speakText: "Great job completing this lesson! Now test your knowledge with the quiz below. You've got this!",
+            duration: 15,
+          },
+        ]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-  const togglePlay = () => {
+    fetchLectureContent();
+  }, [topicTitle, subCategoryTitle]);
+
+  const totalDuration = slides.reduce((acc, slide) => acc + (slide.duration || 20), 0);
+
+  const stopPlayback = useCallback(() => {
+    if (progressIntervalRef.current) {
+      clearInterval(progressIntervalRef.current);
+      progressIntervalRef.current = null;
+    }
+    cancel();
+    setIsPlaying(false);
+    setIsWriting(false);
+  }, [cancel]);
+
+  const playSlide = useCallback((slideIndex: number) => {
+    if (slideIndex >= slides.length || isMuted) return;
+    
+    const slide = slides[slideIndex];
+    setIsWriting(slide.visual === "writing");
+    
+    if (!isMuted && slide.speakText) {
+      speak(slide.speakText, () => {
+        // Speech ended
+        if (slideIndex < slides.length - 1) {
+          // Auto advance handled by progress
+        }
+      });
+    }
+  }, [slides, isMuted, speak]);
+
+  const togglePlay = useCallback(() => {
+    if (isLoading) return;
+
     if (!isPlaying) {
       setIsPlaying(true);
+      
+      // Start speech for current slide
+      if (!isMuted) {
+        playSlide(currentSlide);
+      }
+      
       // Simulate progress
-      const interval = setInterval(() => {
+      progressIntervalRef.current = setInterval(() => {
         setProgress((prev) => {
           if (prev >= 100) {
-            clearInterval(interval);
-            setIsPlaying(false);
+            stopPlayback();
             return 100;
           }
           const newProgress = prev + (100 / (totalDuration * 10));
@@ -67,9 +164,11 @@ export function VideoLecture({ topicTitle, subCategoryTitle, lessonNumber }: Vid
           // Update current slide based on progress
           let cumulativeProgress = 0;
           for (let i = 0; i < slides.length; i++) {
-            cumulativeProgress += (slides[i].duration / totalDuration) * 100;
+            cumulativeProgress += ((slides[i].duration || 20) / totalDuration) * 100;
             if (newProgress <= cumulativeProgress) {
-              setCurrentSlide(i);
+              if (i !== currentSlide) {
+                setCurrentSlide(i);
+              }
               break;
             }
           }
@@ -78,17 +177,45 @@ export function VideoLecture({ topicTitle, subCategoryTitle, lessonNumber }: Vid
         });
       }, 100);
     } else {
+      if (isPaused) {
+        resume();
+      } else {
+        pause();
+      }
       setIsPlaying(false);
+      if (progressIntervalRef.current) {
+        clearInterval(progressIntervalRef.current);
+      }
     }
-  };
+  }, [isPlaying, isLoading, isMuted, currentSlide, playSlide, stopPlayback, totalDuration, slides, isPaused, resume, pause]);
+
+  // Handle slide changes during playback
+  useEffect(() => {
+    if (isPlaying && !isMuted) {
+      cancel();
+      playSlide(currentSlide);
+    }
+  }, [currentSlide, isPlaying, isMuted, playSlide, cancel]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      stopPlayback();
+    };
+  }, [stopPlayback]);
 
   const goToSlide = (index: number) => {
     let cumulativeProgress = 0;
     for (let i = 0; i < index; i++) {
-      cumulativeProgress += (slides[i].duration / totalDuration) * 100;
+      cumulativeProgress += ((slides[i].duration || 20) / totalDuration) * 100;
     }
     setProgress(cumulativeProgress);
     setCurrentSlide(index);
+    
+    if (isPlaying && !isMuted) {
+      cancel();
+      playSlide(index);
+    }
   };
 
   const nextSlide = () => {
@@ -102,6 +229,19 @@ export function VideoLecture({ topicTitle, subCategoryTitle, lessonNumber }: Vid
       goToSlide(currentSlide - 1);
     }
   };
+
+  const toggleMute = () => {
+    if (!isMuted) {
+      cancel();
+    } else if (isPlaying) {
+      playSlide(currentSlide);
+    }
+    setIsMuted(!isMuted);
+  };
+
+  const currentSlideData = slides[currentSlide];
+  const showCharacter = currentSlideData?.visual === "character" || currentSlideData?.visual?.includes("character");
+  const showWriting = currentSlideData?.visual === "writing" || currentSlideData?.visual?.includes("writing");
 
   return (
     <div className="rounded-2xl overflow-hidden bg-gradient-to-br from-slate-900 to-slate-800 border border-slate-700 shadow-2xl">
@@ -144,32 +284,91 @@ export function VideoLecture({ topicTitle, subCategoryTitle, lessonNumber }: Vid
           />
         </div>
 
+        {/* Loading State */}
+        {isLoading && (
+          <div className="absolute inset-0 flex items-center justify-center bg-slate-900/80 z-30">
+            <div className="text-center">
+              <Loader2 className="w-12 h-12 text-primary animate-spin mx-auto mb-4" />
+              <p className="text-slate-300">Generating your personalized lecture...</p>
+            </div>
+          </div>
+        )}
+
+        {/* Error State */}
+        {error && (
+          <div className="absolute top-4 left-4 right-4 z-30">
+            <div className="bg-yellow-500/20 border border-yellow-500/50 rounded-lg px-4 py-2 flex items-center gap-2">
+              <RefreshCw className="w-4 h-4 text-yellow-500" />
+              <span className="text-yellow-200 text-sm">{error}</span>
+            </div>
+          </div>
+        )}
+
         {/* Slide Content */}
-        <motion.div
-          key={currentSlide}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -20 }}
-          transition={{ duration: 0.5 }}
-          className="relative z-10 text-center px-8"
-        >
-          <motion.span
-            className="text-6xl mb-6 block"
-            animate={isPlaying ? { scale: [1, 1.1, 1] } : { scale: 1 }}
-            transition={{ duration: 2, repeat: Infinity }}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentSlide}
+            initial={{ opacity: 0, x: 50 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -50 }}
+            transition={{ duration: 0.5 }}
+            className="relative z-10 w-full h-full flex items-center px-4 md:px-8"
           >
-            {slides[currentSlide].visual}
-          </motion.span>
-          <h3 className="text-2xl md:text-3xl font-display font-bold text-white mb-3">
-            {slides[currentSlide].title}
-          </h3>
-          <p className="text-lg text-slate-300 max-w-lg mx-auto">
-            {slides[currentSlide].content}
-          </p>
-        </motion.div>
+            {/* Character Animation Side */}
+            {showCharacter && (
+              <div className="hidden md:flex items-center justify-center w-1/3">
+                <AnimatedCharacter 
+                  isSpeaking={isSpeaking && isPlaying} 
+                  className="w-48 h-64"
+                />
+              </div>
+            )}
+
+            {/* Content Side */}
+            <div className={`flex-1 ${showCharacter ? 'md:pl-4' : ''} py-4`}>
+              <motion.h3 
+                className="text-xl md:text-2xl font-display font-bold text-white mb-4"
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+              >
+                {currentSlideData?.title}
+              </motion.h3>
+              
+              {showWriting ? (
+                <HandWritingAnimation 
+                  text={currentSlideData?.content || ''} 
+                  isActive={isPlaying && isWriting}
+                  className="max-w-md"
+                />
+              ) : (
+                <motion.div 
+                  className="bg-white/10 backdrop-blur-sm rounded-xl p-4 md:p-6 max-w-lg"
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.3 }}
+                >
+                  <p className="text-base md:text-lg text-slate-200 leading-relaxed">
+                    {currentSlideData?.content}
+                  </p>
+                </motion.div>
+              )}
+
+              {/* Mobile Character */}
+              {showCharacter && (
+                <div className="flex md:hidden justify-center mt-4">
+                  <AnimatedCharacter 
+                    isSpeaking={isSpeaking && isPlaying} 
+                    className="w-24 h-32"
+                  />
+                </div>
+              )}
+            </div>
+          </motion.div>
+        </AnimatePresence>
 
         {/* Play/Pause Overlay */}
-        {!isPlaying && progress === 0 && (
+        {!isPlaying && progress === 0 && !isLoading && (
           <motion.button
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
@@ -185,7 +384,7 @@ export function VideoLecture({ topicTitle, subCategoryTitle, lessonNumber }: Vid
 
       {/* Slide Indicators */}
       <div className="px-4 py-3 bg-slate-800/30 border-t border-slate-700/50">
-        <div className="flex gap-2 justify-center">
+        <div className="flex gap-2 justify-center flex-wrap">
           {slides.map((slide, index) => (
             <button
               key={index}
@@ -196,8 +395,8 @@ export function VideoLecture({ topicTitle, subCategoryTitle, lessonNumber }: Vid
                   : "bg-slate-700/50 text-slate-400 hover:bg-slate-700 hover:text-slate-200"
               }`}
             >
-              <span>{slide.visual}</span>
-              <span className="hidden sm:inline">{slide.title}</span>
+              <span>{index + 1}</span>
+              <span className="hidden sm:inline max-w-[100px] truncate">{slide.title}</span>
             </button>
           ))}
         </div>
@@ -233,7 +432,8 @@ export function VideoLecture({ topicTitle, subCategoryTitle, lessonNumber }: Vid
               variant="ghost"
               size="icon"
               onClick={togglePlay}
-              className="w-10 h-10 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground"
+              disabled={isLoading}
+              className="w-10 h-10 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground disabled:opacity-50"
             >
               {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5 ml-0.5" />}
             </Button>
@@ -255,7 +455,7 @@ export function VideoLecture({ topicTitle, subCategoryTitle, lessonNumber }: Vid
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => setIsMuted(!isMuted)}
+            onClick={toggleMute}
             className="text-slate-400 hover:text-white"
           >
             {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
