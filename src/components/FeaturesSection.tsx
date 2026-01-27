@@ -2,6 +2,7 @@ import { Wallet, TrendingUp, GraduationCap, Rocket, ChevronDown, ChevronRight, E
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { featureSubsData, SubCategory } from "@/data/featureData";
+import { motion, AnimatePresence } from "framer-motion";
 
 const features = [
   {
@@ -62,12 +63,16 @@ export function FeaturesSection() {
         {/* Features Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
           {features.map((feature, index) => (
-            <div
+            <motion.div
               key={feature.title}
-              className={`group relative p-6 rounded-2xl bg-card border border-border hover:border-primary/50 transition-all duration-500 shadow-card hover:shadow-elevated ${
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: index * 0.1 }}
+              viewport={{ once: true }}
+              whileHover={{ y: -4 }}
+              className={`group relative p-6 rounded-2xl bg-card border border-border hover:border-primary/50 transition-all duration-300 shadow-card hover:shadow-elevated ${
                 feature.hasExpanded ? "cursor-pointer" : ""
               } ${expandedFeature === feature.title ? "lg:col-span-4" : ""}`}
-              style={{ animationDelay: `${index * 0.1}s` }}
               onClick={(e) => {
                 if (feature.hasExpanded && e.target === e.currentTarget) {
                   handleFeatureClick(feature);
@@ -106,56 +111,76 @@ export function FeaturesSection() {
               </p>
 
               {/* Expanded Content */}
-              {feature.hasExpanded && expandedFeature === feature.title && featureSubsData[feature.title] && (
-                <div className="mt-6 space-y-6 animate-fade-in">
-                  {featureSubsData[feature.title].map((sub, subIndex) => (
-                    <div key={sub.title} className="border-t border-border/50 pt-4">
-                      <div className="flex items-center gap-3 mb-3">
-                        <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-                          <sub.icon className="w-4 h-4 text-primary" />
+              <AnimatePresence>
+                {feature.hasExpanded && expandedFeature === feature.title && featureSubsData[feature.title] && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="mt-6 space-y-6 overflow-hidden"
+                  >
+                    {featureSubsData[feature.title].map((sub, subIndex) => (
+                      <motion.div 
+                        key={sub.title} 
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: subIndex * 0.1 }}
+                        className="border-t border-border/50 pt-4"
+                      >
+                        <div className="flex items-center gap-3 mb-3">
+                          <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                            <sub.icon className="w-4 h-4 text-primary" />
+                          </div>
+                          <h4 className="font-display font-semibold text-foreground">
+                            {subIndex + 1}. {sub.title}
+                          </h4>
                         </div>
-                        <h4 className="font-display font-semibold text-foreground">
-                          {subIndex + 1}. {sub.title}
-                        </h4>
-                      </div>
-                      <p className="text-sm text-muted-foreground mb-4 pl-11 italic">
-                        {sub.introduction}
-                      </p>
-                      <ul className="space-y-3 pl-11">
-                        {sub.items.map((item, itemIndex) => {
-                          const itemKey = `${feature.title}-${subIndex + 1}.${itemIndex + 1}`;
-                          const isExpanded = expandedSubItem === itemKey;
-                          
-                          return (
-                            <li key={itemIndex} className="text-sm">
-                              <Link
-                                to={`/topic/${encodeURIComponent(feature.title)}/${subIndex + 1}/${itemIndex + 1}`}
-                                className="flex items-start gap-2 w-full text-left hover:bg-muted/50 rounded-lg p-2 -ml-2 transition-colors group/link"
-                                onClick={(e) => e.stopPropagation()}
+                        <p className="text-sm text-muted-foreground mb-4 pl-11 italic">
+                          {sub.introduction}
+                        </p>
+                        <ul className="space-y-3 pl-11">
+                          {sub.items.map((item, itemIndex) => {
+                            const itemKey = `${feature.title}-${subIndex + 1}.${itemIndex + 1}`;
+                            const isExpanded = expandedSubItem === itemKey;
+                            
+                            return (
+                              <motion.li 
+                                key={itemIndex} 
+                                className="text-sm"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                transition={{ delay: (subIndex * 0.1) + (itemIndex * 0.05) }}
                               >
-                                <ExternalLink 
-                                  className="w-4 h-4 text-primary shrink-0 mt-0.5 group-hover/link:scale-110 transition-transform"
-                                />
-                                <span className="text-primary font-medium shrink-0">
-                                  {subIndex + 1}.{itemIndex + 1}
-                                </span>
-                                <span className="text-foreground font-medium group-hover/link:text-primary transition-colors">
-                                  {item.title}
-                                </span>
-                              </Link>
-                              
-                            </li>
-                          );
-                        })}
-                      </ul>
-                    </div>
-                  ))}
-                </div>
-              )}
+                                <Link
+                                  to={`/topic/${encodeURIComponent(feature.title)}/${subIndex + 1}/${itemIndex + 1}`}
+                                  className="flex items-start gap-2 w-full text-left hover:bg-muted/50 rounded-lg p-2 -ml-2 transition-all duration-200 group/link active:scale-[0.99]"
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  <ExternalLink 
+                                    className="w-4 h-4 text-primary shrink-0 mt-0.5 group-hover/link:scale-110 transition-transform"
+                                  />
+                                  <span className="text-primary font-medium shrink-0">
+                                    {subIndex + 1}.{itemIndex + 1}
+                                  </span>
+                                  <span className="text-foreground font-medium group-hover/link:text-primary transition-colors">
+                                    {item.title}
+                                  </span>
+                                </Link>
+                                
+                              </motion.li>
+                            );
+                          })}
+                        </ul>
+                      </motion.div>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
               {/* Hover Effect */}
-              <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
-            </div>
+              <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+            </motion.div>
           ))}
         </div>
       </div>

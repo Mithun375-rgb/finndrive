@@ -18,29 +18,38 @@ export function HeroSection() {
           {/* Badge */}
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-muted/50 border border-border mb-8 animate-fade-up opacity-0" style={{ animationDelay: '0.1s', animationFillMode: 'forwards' }}>
             <Sparkles className="w-4 h-4 text-primary" />
-            <span className="text-sm text-muted-foreground">Your Financial Journey Starts Here</span>
+            <span className="text-sm text-muted-foreground">Free Financial Literacy for Students & Young Adults</span>
           </div>
 
-          {/* Main Headline */}
+          {/* Main Headline - Clear Value Proposition */}
           <h1 className="font-display text-5xl md:text-6xl lg:text-7xl font-bold leading-tight mb-6 animate-fade-up opacity-0" style={{ animationDelay: '0.2s', animationFillMode: 'forwards' }}>
-            Fuel Your Drive to{" "}
-            <span className="text-gradient-gold">Financial Independence</span>
+            Master Your Money,{" "}
+            <span className="text-gradient-gold">Build Your Future</span>
           </h1>
 
-          {/* Subtext */}
-          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-10 animate-fade-up opacity-0" style={{ animationDelay: '0.3s', animationFillMode: 'forwards' }}>
-            Learn money management, investments, scholarships, and startup skills — all in one app designed to empower your future.
+          {/* Subtext - Benefits-focused */}
+          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-6 animate-fade-up opacity-0" style={{ animationDelay: '0.3s', animationFillMode: 'forwards' }}>
+            Learn practical money skills, find scholarships worth ₹10Cr+, and get step-by-step startup guidance — all in one free platform designed for ambitious students.
           </p>
 
-          {/* CTA Buttons */}
+          {/* Who it's for */}
+          <div className="flex flex-wrap items-center justify-center gap-3 mb-10 animate-fade-up opacity-0" style={{ animationDelay: '0.35s', animationFillMode: 'forwards' }}>
+            {["Students", "College Grads", "Young Professionals", "Aspiring Entrepreneurs"].map((item) => (
+              <span key={item} className="px-3 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-medium border border-primary/20">
+                {item}
+              </span>
+            ))}
+          </div>
+
+          {/* CTA Buttons - Clear actions */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-up opacity-0" style={{ animationDelay: '0.4s', animationFillMode: 'forwards' }}>
             <Button variant="hero" size="xl" className="group">
               <Download className="w-5 h-5" />
-              Download Findrive
+              Start Learning Free
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </Button>
-            <Button variant="heroOutline" size="xl">
-              Learn More
+            <Button variant="heroOutline" size="xl" onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}>
+              Explore Topics
             </Button>
           </div>
 

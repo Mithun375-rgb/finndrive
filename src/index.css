@@ -5,66 +5,68 @@
 @tailwind utilities;
 
 @layer base {
+  /* Light Theme */
   :root {
-    --background: 220 20% 6%;
-    --foreground: 45 30% 92%;
+    --background: 45 25% 96%;
+    --foreground: 220 20% 10%;
 
-    --card: 220 18% 10%;
-    --card-foreground: 45 30% 92%;
+    --card: 0 0% 100%;
+    --card-foreground: 220 20% 10%;
 
-    --popover: 220 18% 10%;
-    --popover-foreground: 45 30% 92%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 20% 10%;
 
-    --primary: 35 60% 55%;
-    --primary-foreground: 220 20% 6%;
+    --primary: 35 60% 45%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 220 15% 15%;
-    --secondary-foreground: 45 30% 92%;
+    --secondary: 220 10% 90%;
+    --secondary-foreground: 220 20% 10%;
 
-    --muted: 220 15% 18%;
-    --muted-foreground: 220 10% 55%;
+    --muted: 220 10% 92%;
+    --muted-foreground: 220 10% 40%;
 
-    --accent: 10 50% 40%;
-    --accent-foreground: 45 30% 92%;
+    --accent: 10 50% 45%;
+    --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 220 15% 20%;
-    --input: 220 15% 18%;
-    --ring: 35 60% 55%;
+    --border: 220 10% 85%;
+    --input: 220 10% 90%;
+    --ring: 35 60% 45%;
 
     --radius: 0.5rem;
 
     /* Custom design tokens */
-    --gold: 35 60% 55%;
-    --gold-light: 40 70% 70%;
-    --gold-dark: 30 50% 40%;
-    --burgundy: 350 50% 30%;
-    --cream: 45 30% 92%;
-    --charcoal: 220 18% 12%;
-    --deep-black: 220 20% 6%;
+    --gold: 35 60% 45%;
+    --gold-light: 40 70% 60%;
+    --gold-dark: 30 50% 35%;
+    --burgundy: 350 50% 35%;
+    --cream: 45 30% 96%;
+    --charcoal: 220 18% 15%;
+    --deep-black: 220 20% 8%;
     
     /* Gradients */
     --gradient-gold: linear-gradient(135deg, hsl(var(--gold)) 0%, hsl(var(--gold-light)) 50%, hsl(var(--gold)) 100%);
-    --gradient-dark: linear-gradient(180deg, hsl(var(--background)) 0%, hsl(var(--charcoal)) 100%);
-    --gradient-hero: radial-gradient(ellipse at center top, hsl(220 18% 12%) 0%, hsl(var(--background)) 70%);
+    --gradient-dark: linear-gradient(180deg, hsl(var(--background)) 0%, hsl(220 15% 92%) 100%);
+    --gradient-hero: radial-gradient(ellipse at center top, hsl(45 20% 92%) 0%, hsl(var(--background)) 70%);
     
     /* Shadows */
-    --shadow-gold: 0 4px 30px hsl(var(--gold) / 0.2);
-    --shadow-card: 0 8px 32px hsl(0 0% 0% / 0.3);
-    --shadow-elevated: 0 20px 60px hsl(0 0% 0% / 0.5);
+    --shadow-gold: 0 4px 30px hsl(var(--gold) / 0.15);
+    --shadow-card: 0 8px 32px hsl(220 20% 10% / 0.08);
+    --shadow-elevated: 0 20px 60px hsl(220 20% 10% / 0.12);
 
-    --sidebar-background: 220 18% 10%;
-    --sidebar-foreground: 45 30% 92%;
-    --sidebar-primary: 35 60% 55%;
-    --sidebar-primary-foreground: 220 20% 6%;
-    --sidebar-accent: 220 15% 18%;
-    --sidebar-accent-foreground: 45 30% 92%;
-    --sidebar-border: 220 15% 20%;
-    --sidebar-ring: 35 60% 55%;
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 220 20% 10%;
+    --sidebar-primary: 35 60% 45%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 10% 92%;
+    --sidebar-accent-foreground: 220 20% 10%;
+    --sidebar-border: 220 10% 85%;
+    --sidebar-ring: 35 60% 45%;
   }
 
+  /* Dark Theme - Peaky Blinders aesthetic */
   .dark {
     --background: 220 20% 6%;
     --foreground: 45 30% 92%;
@@ -85,6 +87,25 @@
     --border: 220 15% 20%;
     --input: 220 15% 18%;
     --ring: 35 60% 55%;
+
+    /* Dark mode custom tokens */
+    --gold: 35 60% 55%;
+    --gold-light: 40 70% 70%;
+    --gold-dark: 30 50% 40%;
+    --burgundy: 350 50% 30%;
+    --cream: 45 30% 92%;
+    --charcoal: 220 18% 12%;
+    --deep-black: 220 20% 6%;
+    
+    /* Dark mode gradients */
+    --gradient-gold: linear-gradient(135deg, hsl(var(--gold)) 0%, hsl(var(--gold-light)) 50%, hsl(var(--gold)) 100%);
+    --gradient-dark: linear-gradient(180deg, hsl(var(--background)) 0%, hsl(var(--charcoal)) 100%);
+    --gradient-hero: radial-gradient(ellipse at center top, hsl(220 18% 12%) 0%, hsl(var(--background)) 70%);
+    
+    /* Dark mode shadows */
+    --shadow-gold: 0 4px 30px hsl(var(--gold) / 0.2);
+    --shadow-card: 0 8px 32px hsl(0 0% 0% / 0.3);
+    --shadow-elevated: 0 20px 60px hsl(0 0% 0% / 0.5);
   }
 }
 

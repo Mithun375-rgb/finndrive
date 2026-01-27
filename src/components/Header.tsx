@@ -4,6 +4,8 @@ import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { FindriveLogo } from "@/components/FindriveLogo";
 import { UserMenu } from "@/components/UserMenu";
+import { ThemeToggle } from "@/components/ThemeToggle";
+import { SearchBar } from "@/components/SearchBar";
 
 const navItems = [
   { name: "Home", href: "/" },
@@ -48,7 +50,7 @@ export function Header() {
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden lg:flex items-center gap-8">
+          <nav className="hidden lg:flex items-center gap-6">
             {navItems.map((item) => (
               item.href === "/" ? (
                 <Link
@@ -70,8 +72,14 @@ export function Header() {
             ))}
           </nav>
 
-          {/* User Menu & CTA */}
-          <div className="hidden lg:flex items-center gap-4">
+          {/* Search Bar */}
+          <div className="hidden md:block">
+            <SearchBar />
+          </div>
+
+          {/* User Menu, Theme Toggle & CTA */}
+          <div className="hidden lg:flex items-center gap-3">
+            <ThemeToggle />
             <UserMenu />
             <Button variant="hero" size="lg">
               Download App
@@ -112,10 +120,14 @@ export function Header() {
                   </button>
                 )
               ))}
-              <div className="pt-4 border-t border-border/50 mt-4">
+              <div className="pt-4 border-t border-border/50 mt-4 flex items-center justify-between">
                 <UserMenu />
+                <ThemeToggle />
               </div>
-              <Button variant="hero" size="lg" className="mt-4">
+              <div className="mt-4">
+                <SearchBar />
+              </div>
+              <Button variant="hero" size="lg" className="mt-4 w-full">
                 Download App
               </Button>
             </div>

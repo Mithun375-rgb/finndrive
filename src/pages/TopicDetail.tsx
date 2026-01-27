@@ -4,7 +4,7 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { featureSubsData } from "@/data/featureData";
-
+import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { TopicQuiz } from "@/components/TopicQuiz";
 import { getQuizForTopic } from "@/data/quizData";
 import { useLearningProgress } from "@/hooks/useLearningProgress";
@@ -103,14 +103,8 @@ export default function TopicDetail() {
       <Header />
       <main className="pt-32 pb-24">
         <div className="container mx-auto px-4">
-          {/* Breadcrumb */}
-          <Link 
-            to="/#features" 
-            className="inline-flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors mb-8 group"
-          >
-            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-            Back to {category}
-          </Link>
+          {/* Breadcrumbs */}
+          <Breadcrumbs />
 
           {/* Topic Header */}
           <div className="mb-12">
