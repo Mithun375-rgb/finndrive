@@ -47,11 +47,11 @@ export function FeaturesSection() {
   };
 
   return (
-    <section id="features" className="py-24 relative grain">
+    <section id="features" className="py-24 relative grain" aria-labelledby="features-heading">
       <div className="container mx-auto px-4">
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <h2 className="font-display text-4xl md:text-5xl font-bold mb-4">
+          <h2 id="features-heading" className="font-display text-4xl md:text-5xl font-bold mb-4">
             Everything You Need to{" "}
             <span className="text-gradient-gold">Succeed</span>
           </h2>
@@ -61,10 +61,11 @@ export function FeaturesSection() {
         </div>
 
         {/* Features Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6" role="list" aria-label="Feature categories">
           {features.map((feature, index) => (
             <motion.div
               key={feature.title}
+              role="listitem"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: index * 0.1 }}
@@ -78,11 +79,20 @@ export function FeaturesSection() {
                   handleFeatureClick(feature);
                 }
               }}
+              onKeyDown={(e) => {
+                if (feature.hasExpanded && (e.key === "Enter" || e.key === " ")) {
+                  e.preventDefault();
+                  handleFeatureClick(feature);
+                }
+              }}
+              tabIndex={feature.hasExpanded ? 0 : undefined}
+              aria-expanded={feature.hasExpanded ? expandedFeature === feature.title : undefined}
             >
               {/* Icon */}
               <div 
                 className={`w-14 h-14 rounded-xl bg-gradient-to-br ${feature.color} flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300`}
                 onClick={() => handleFeatureClick(feature)}
+                aria-hidden="true"
               >
                 <feature.icon className="w-7 h-7 text-primary-foreground" />
               </div>

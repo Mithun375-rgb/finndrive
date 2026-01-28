@@ -1,4 +1,5 @@
 import { Instagram, Linkedin, Twitter, Youtube, Mail, Phone, MapPin } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const quickLinks = [
   { name: "Home", href: "#home" },
@@ -11,8 +12,8 @@ const quickLinks = [
 
 const legalLinks = [
   { name: "About Us", href: "#" },
-  { name: "Privacy Policy", href: "#" },
-  { name: "Terms of Service", href: "#" },
+  { name: "Privacy Policy", href: "/privacy", isRoute: true },
+  { name: "Terms of Service", href: "/terms", isRoute: true },
   { name: "Contact", href: "#contact" },
 ];
 
@@ -75,15 +76,24 @@ export function Footer() {
           {/* Legal */}
           <div>
             <h4 className="font-display font-semibold mb-6">Legal</h4>
-            <ul className="space-y-3">
+            <ul className="space-y-3" role="list">
               {legalLinks.map((link) => (
                 <li key={link.name}>
-                  <a
-                    href={link.href}
-                    className="text-sm text-muted-foreground hover:text-primary transition-colors"
-                  >
-                    {link.name}
-                  </a>
+                  {link.isRoute ? (
+                    <Link
+                      to={link.href}
+                      className="text-sm text-muted-foreground hover:text-primary transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded"
+                    >
+                      {link.name}
+                    </Link>
+                  ) : (
+                    <a
+                      href={link.href}
+                      className="text-sm text-muted-foreground hover:text-primary transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded"
+                    >
+                      {link.name}
+                    </a>
+                  )}
                 </li>
               ))}
             </ul>

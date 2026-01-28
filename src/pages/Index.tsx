@@ -32,7 +32,7 @@ const Index = () => {
       {showSpinner && <SpinningLogo onComplete={handleSpinnerComplete} />}
       <Header />
       <AskAIButton />
-      <main>
+      <main id="main-content" tabIndex={-1}>
         <HeroSection />
         <FeaturesSection />
         <ScholarshipSection />

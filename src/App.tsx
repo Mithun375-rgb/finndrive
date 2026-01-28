@@ -11,6 +11,8 @@ import TopicDetail from "./pages/TopicDetail";
 import AskAI from "./pages/AskAI";
 import Auth from "./pages/Auth";
 import Progress from "./pages/Progress";
+import TermsOfService from "./pages/TermsOfService";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
 
 const queryClient = new QueryClient();
 
@@ -28,6 +30,8 @@ const App = () => (
               <Route path="/progress" element={<Progress />} />
               <Route path="/ask-ai" element={<AskAI />} />
               <Route path="/topic/:category/:subIndex/:itemIndex" element={<TopicDetail />} />
+              <Route path="/terms" element={<TermsOfService />} />
+              <Route path="/privacy" element={<PrivacyPolicy />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
