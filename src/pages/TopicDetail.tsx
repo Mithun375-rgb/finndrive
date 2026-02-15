@@ -1,5 +1,5 @@
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, ArrowRight, CheckCircle2, HelpCircle, BookmarkCheck } from "lucide-react";
+import { ArrowLeft, ArrowRight, CheckCircle2, HelpCircle, BookmarkCheck, Brain } from "lucide-react";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,9 @@ import { TopicQuiz } from "@/components/TopicQuiz";
 import { getQuizForTopic } from "@/data/quizData";
 import { useLearningProgress } from "@/hooks/useLearningProgress";
 import { useAuth } from "@/contexts/AuthContext";
+import { LessonChart } from "@/components/LessonChart";
+import { LessonTable } from "@/components/LessonTable";
+import { MindMap } from "@/components/MindMap";
 export default function TopicDetail() {
   const { category, subIndex, itemIndex } = useParams();
   const navigate = useNavigate();
@@ -143,67 +146,53 @@ export default function TopicDetail() {
             </p>
           </div>
 
-          {/* Content Grid */}
-          <div className="grid lg:grid-cols-2 gap-6 mb-12">
-            <ContentCard 
-              label="Definition" 
-              content={item.content.definition}
-              variant="primary"
-            />
-            <ContentCard 
-              label="Why Required" 
-              content={item.content.whyRequired}
-              variant="default"
-            />
-            <ContentCard 
-              label="What It Does" 
-              content={item.content.whatItDoes}
-              variant="default"
-            />
-            <ContentCard 
-              label="How It Works" 
-              content={item.content.howItWorks}
-              variant="default"
-            />
+          {/* Overview */}
+          <div className="p-6 rounded-2xl bg-gradient-to-br from-primary/10 to-transparent border border-primary/30 mb-8">
+            <span className="text-xs font-semibold text-primary uppercase tracking-wider block mb-3">Overview</span>
+            <p className="text-foreground leading-relaxed text-lg">{item.content.overview}</p>
           </div>
 
-          {/* Example & Scenario */}
+          {/* Detailed Sections */}
+          <div className="space-y-6 mb-12">
+            {item.content.sections.map((section, idx) => (
+              <div key={idx} className="p-6 rounded-2xl bg-card border border-border">
+                <h3 className="font-display font-semibold text-lg mb-3 text-foreground">{section.heading}</h3>
+                <p className="text-muted-foreground leading-relaxed">{section.content}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* Chart & Table */}
           <div className="grid lg:grid-cols-2 gap-6 mb-12">
-            <div className="p-6 rounded-2xl bg-card border border-border">
-              <div className="flex items-center gap-2 mb-4">
-                <span className="w-8 h-8 rounded-lg bg-emerald-500/20 flex items-center justify-center">
-                  <span className="text-emerald-500 text-lg">📊</span>
-                </span>
-                <span className="text-sm font-semibold text-emerald-500 uppercase tracking-wider">Example</span>
-              </div>
-              <p className="text-foreground leading-relaxed">{item.content.example}</p>
-            </div>
-            <div className="p-6 rounded-2xl bg-card border border-border">
-              <div className="flex items-center gap-2 mb-4">
-                <span className="w-8 h-8 rounded-lg bg-blue-500/20 flex items-center justify-center">
-                  <span className="text-blue-500 text-lg">💡</span>
-                </span>
-                <span className="text-sm font-semibold text-blue-500 uppercase tracking-wider">Scenario</span>
-              </div>
-              <p className="text-foreground leading-relaxed">{item.content.scenario}</p>
-            </div>
+            {item.content.chart && <LessonChart chart={item.content.chart} />}
+            {item.content.table && <LessonTable table={item.content.table} />}
           </div>
 
           {/* Key Takeaway & Conclusion */}
-          <div className="space-y-6">
+          <div className="space-y-6 mb-12">
             <div className="p-8 rounded-2xl bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20">
-              <span className="text-sm font-semibold text-primary uppercase tracking-wider block mb-3">
-                Key Takeaway
-              </span>
-              <p className="text-xl md:text-2xl font-display font-semibold text-foreground">
-                {item.content.keyTakeaway}
-              </p>
+              <span className="text-sm font-semibold text-primary uppercase tracking-wider block mb-3">Key Takeaway</span>
+              <p className="text-xl md:text-2xl font-display font-semibold text-foreground">{item.content.keyTakeaway}</p>
             </div>
             <div className="p-6 rounded-2xl bg-card border border-border">
-              <span className="text-sm font-semibold text-muted-foreground uppercase tracking-wider block mb-3">
-                Conclusion
-              </span>
+              <span className="text-sm font-semibold text-muted-foreground uppercase tracking-wider block mb-3">Conclusion</span>
               <p className="text-foreground leading-relaxed text-lg">{item.content.conclusion}</p>
+            </div>
+          </div>
+
+          {/* Mind Map */}
+          <div className="mb-12">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-indigo-500 flex items-center justify-center">
+                <Brain className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h2 className="font-display text-xl font-bold">Mind Map</h2>
+                <p className="text-sm text-muted-foreground">Visual summary of key concepts</p>
+              </div>
+            </div>
+            <div className="p-6 rounded-2xl bg-card border border-border">
+              <MindMap data={item.content.mindMap} />
             </div>
           </div>
 
