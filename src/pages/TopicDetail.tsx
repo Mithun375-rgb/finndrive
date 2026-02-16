@@ -147,36 +147,36 @@ export default function TopicDetail() {
           </div>
 
           {/* Overview */}
-          <div className="p-6 rounded-2xl bg-gradient-to-br from-primary/10 to-transparent border border-primary/30 mb-8">
+          <div className="p-4 sm:p-6 rounded-2xl bg-gradient-to-br from-primary/10 to-transparent border border-primary/30 mb-8">
             <span className="text-xs font-semibold text-primary uppercase tracking-wider block mb-3">Overview</span>
-            <p className="text-foreground leading-relaxed text-lg">{item.content.overview}</p>
+            <p className="text-foreground leading-relaxed text-base sm:text-lg">{item.content.overview}</p>
           </div>
 
           {/* Detailed Sections */}
-          <div className="space-y-6 mb-12">
+          <div className="space-y-4 sm:space-y-6 mb-8 sm:mb-12">
             {item.content.sections.map((section, idx) => (
-              <div key={idx} className="p-6 rounded-2xl bg-card border border-border">
-                <h3 className="font-display font-semibold text-lg mb-3 text-foreground">{section.heading}</h3>
-                <p className="text-muted-foreground leading-relaxed">{section.content}</p>
+              <div key={idx} className="p-4 sm:p-6 rounded-2xl bg-card border border-border">
+                <h3 className="font-display font-semibold text-base sm:text-lg mb-2 sm:mb-3 text-foreground">{section.heading}</h3>
+                <p className="text-muted-foreground leading-relaxed text-sm sm:text-base">{section.content}</p>
               </div>
             ))}
           </div>
 
           {/* Chart & Table */}
-          <div className="grid lg:grid-cols-2 gap-6 mb-12">
+          <div className="grid gap-6 mb-8 sm:mb-12 lg:grid-cols-2">
             {item.content.chart && <LessonChart chart={item.content.chart} />}
             {item.content.table && <LessonTable table={item.content.table} />}
           </div>
 
           {/* Key Takeaway & Conclusion */}
-          <div className="space-y-6 mb-12">
-            <div className="p-8 rounded-2xl bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20">
+          <div className="space-y-4 sm:space-y-6 mb-8 sm:mb-12">
+            <div className="p-5 sm:p-8 rounded-2xl bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20">
               <span className="text-sm font-semibold text-primary uppercase tracking-wider block mb-3">Key Takeaway</span>
-              <p className="text-xl md:text-2xl font-display font-semibold text-foreground">{item.content.keyTakeaway}</p>
+              <p className="text-lg sm:text-xl md:text-2xl font-display font-semibold text-foreground">{item.content.keyTakeaway}</p>
             </div>
-            <div className="p-6 rounded-2xl bg-card border border-border">
+            <div className="p-4 sm:p-6 rounded-2xl bg-card border border-border">
               <span className="text-sm font-semibold text-muted-foreground uppercase tracking-wider block mb-3">Conclusion</span>
-              <p className="text-foreground leading-relaxed text-lg">{item.content.conclusion}</p>
+              <p className="text-foreground leading-relaxed text-base sm:text-lg">{item.content.conclusion}</p>
             </div>
           </div>
 
