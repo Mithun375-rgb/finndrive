@@ -21,12 +21,12 @@ export function LessonChart({ chart }: { chart: LessonChartData }) {
   const { type, title, data } = chart;
 
   return (
-    <div className="p-6 rounded-2xl bg-card border border-border">
-      <h3 className="font-display font-semibold text-lg mb-4 flex items-center gap-2">
+    <div className="p-4 sm:p-6 rounded-2xl bg-card border border-border">
+      <h3 className="font-display font-semibold text-base sm:text-lg mb-4 flex items-center gap-2">
         <span className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center text-sm">📊</span>
         {title}
       </h3>
-      <ResponsiveContainer width="100%" height={300}>
+      <ResponsiveContainer width="100%" height={280}>
         {type === "pie" ? (
           <PieChart>
             <Pie
@@ -35,7 +35,7 @@ export function LessonChart({ chart }: { chart: LessonChartData }) {
               cy="50%"
               labelLine={false}
               label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-              outerRadius={100}
+              outerRadius={80}
               dataKey="value"
             >
               {data.map((entry, i) => (
@@ -48,7 +48,7 @@ export function LessonChart({ chart }: { chart: LessonChartData }) {
         ) : type === "bar" ? (
           <BarChart data={data}>
             <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-            <XAxis dataKey="name" tick={{ fontSize: 12 }} stroke="hsl(var(--muted-foreground))" />
+            <XAxis dataKey="name" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" angle={-20} textAnchor="end" height={50} />
             <YAxis tick={{ fontSize: 12 }} stroke="hsl(var(--muted-foreground))" />
             <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8 }} />
             <Bar dataKey="value" radius={[4, 4, 0, 0]}>
